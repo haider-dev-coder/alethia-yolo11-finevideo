@@ -1,0 +1,7 @@
+finevideo/
+*.mp4
+*.parts/
+*.pt
+.env
+*.key
+__pycache__/
