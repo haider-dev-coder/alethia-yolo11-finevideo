@@ -1,11 +1,10 @@
-(# WRITEUP
+# WRITEUP
 
 ## 1. Timings
 - File 0 (Colab, 1x T4, FP16): 9144 s of video in 42m12s, about 3.6x realtime, 0 errors.
 - Benchmark on a T4: FP32 about 52 fps, FP16 about 102 fps. Decoding alone ran at about 1000 fps.
 - Full run of 50 files at this speed: about 35 GPU-hours on one T4, so about 17-18 hours on two.
-- What I actually completed: <N> of 50 files (files <list>). Total wall time: <fill in>.
-  Files 0 and <list> ran on <Colab/Kaggle>.
+- What I actually completed: 7 of 50 files (0, 1, 2, 20, 21, 25, 26). Files 0, 20 and 21 ran on Colab; files 1, 2, 25 and 26 ran on Kaggle (T4 x2). Total elapsed time was about 2 days, mostly lost to Kaggle session resets.
 
 ## 2. Pipeline
 - `run.py` walks the sorted Parquet files. A decode thread reads each video (ffmpeg-based
@@ -15,7 +14,7 @@
 - The aggregator groups frames into seconds: an object is present if it appears in at least
   50% of that second's frames, and people is the per-frame median, halves rounded down.
   Empty seconds are still written.
-- Output goes to `<parquet>.jsonl.tmp` and is renamed atomically when the file is complete,
+- Output goes to `NAME.jsonl.tmp` and is renamed atomically when the file is complete,
   then a `.done` marker is written. Reruns skip files with `.done`, which made resuming after
   session resets possible. Per-video errors become one error line and do not stop the run.
 
@@ -29,16 +28,16 @@ the GPU is always the limit. FP16 roughly doubled throughput over FP32.
 - Aggregator unit test for the 50% rule, median rounding and gap seconds.
 - FP16 vs FP32 on 600 frames (262 with detections): identical objects and people counts.
   This is a limited sample.
-- Not tested: real damaged videos (only the code path).
-- Final validation of the merged file: <JSON valid? videos counted? error lines?>
+- Not tested: real damaged videos (only the code path). Output was not compared against ground truth.
+- Final validation of the merged file: 68,685 lines, 231 videos, 0 error lines; every line parses as valid JSON.
 
 ## 5. Where AI suggestions were wrong
 - A `pip freeze` was proposed as the base for requirements.txt; it contained `+cu130` builds and
   three OpenCV packages that conflict. I cleaned it.
-- The first push cell printed the full GitHub token in its output. I revoked the token.
+- The first push cell printed the full GitHub token in its output. I treated the token as leaked and replaced it.
 - The code recovered from the notebook had an older `run.py` without `--start/--end`; the
   suggested commands assumed those flags existed until I checked.
-- Several commands were given with `<placeholders>` that I ran literally and they failed.
+- Several commands were given with angle-bracket placeholders that I ran literally and they failed.
 - The Hugging Face "save as you go" idea needed a write token I did not have, and cost time.
 - Advice to rely on an interactive Kaggle session was wrong in practice: it reset about five
   times, each time wiping `/kaggle/working`.
@@ -48,4 +47,4 @@ the GPU is always the limit. FP16 roughly doubled throughput over FP32.
 - Write results to durable storage (Drive or a bucket) as each file finishes.
 - Try batch 64 and `cudnn.benchmark`, then a TensorRT export, checking outputs stay identical.
 - Test on real damaged videos.
-- Finish the remaining files: <list>.)
+- Process the remaining 43 files (3-19, 22-24, 27-49) with the same commands; finished files are skipped.
