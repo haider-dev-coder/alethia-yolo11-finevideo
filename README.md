@@ -1,5 +1,3 @@
-(# ALETHIA: YOLO11l per-second object detection on FineVideo
-
 Runs the official `yolo11l.pt` over FineVideo Parquet files and writes, for every
 second of every video, which of 5 objects are present (person, car, dog, laptop,
 cell phone) and how many people are visible.
